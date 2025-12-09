@@ -172,25 +172,62 @@ function StudentView({ onLogout }) {
         <p>Generuję pytanie...</p>
       ) : (
         <>
-          <div style={{ marginBottom: '20px', padding: '15px', background: '#f5f5f5' }}>
-  <h3><MathDisplay text={question} /></h3>
-  <p><strong>Przykład:</strong> <MathDisplay text={examples[currentExample]?.problem} /></p>
-</div>
+          <div style={{ 
+            marginBottom: '20px', 
+            padding: '15px', 
+            background: '#f5f5f5',
+            wordWrap: 'break-word',
+            whiteSpace: 'normal',
+            lineHeight: '1.6',
+            borderRadius: '8px'
+          }}>
+            <h3 style={{ marginBottom: '15px', wordWrap: 'break-word' }}>
+              <MathDisplay text={question} />
+            </h3>
+            <p style={{ fontSize: '16px' }}>
+              <strong>Przykład:</strong> <MathDisplay text={examples[currentExample]?.problem} />
+            </p>
+          </div>
 
           <input 
             type="text"
             value={userAnswer}
             onChange={(e) => setUserAnswer(e.target.value)}
             placeholder="Twoja odpowiedź"
-            style={{ width: '100%', padding: '10px', marginBottom: '10px', fontSize: '16px' }}
-            onKeyPress={(e) => e.key === 'Enter' && checkAnswer()}
+            style={{ 
+              width: '100%', 
+              padding: '15px', 
+              marginBottom: '10px', 
+              fontSize: '20px',
+              textAlign: 'center',
+              border: '2px solid #ddd',
+              borderRadius: '8px'
+            }}
+            readOnly
+          />
+
+          <MathKeyboard
+            onInput={(value) => setUserAnswer(userAnswer + value)}
+            onDelete={() => setUserAnswer(userAnswer.slice(0, -1))}
+            onClear={() => setUserAnswer('')}
           />
 
           <button 
             onClick={checkAnswer}
-            style={{ width: '100%', padding: '15px', fontSize: '18px' }}
+            style={{ 
+              width: '100%', 
+              padding: '15px', 
+              fontSize: '18px',
+              marginTop: '15px',
+              background: '#4CAF50',
+              color: 'white',
+              border: 'none',
+              borderRadius: '8px',
+              cursor: 'pointer',
+              fontWeight: 'bold'
+            }}
           >
-            Sprawdź
+            Sprawdź odpowiedź
           </button>
         </>
       )}
