@@ -15,22 +15,29 @@ exports.handler = async (event) => {
         role: 'user',
         content: `Jesteś ekspertem od matematyki dla 8 klasy szkoły podstawowej w Polsce. 
 
-Wygeneruj jedno zadanie egzaminacyjne z tematu: ${topic_name}
-
-Zadanie powinno zawierać:
-1. Treść głównego pytania/polecenia
-2. ${examples_count} konkretnych przykładów do rozwiązania z odpowiedziami
-
-Format JSON:
-{
-  "question": "treść głównego pytania",
-  "examples": [
-    {"problem": "konkretny przykład 1", "answer": "odpowiedź"}
-  ]
-}
-
-Odpowiedzi w formie prostej (liczby, ułamki 1/2, potęgi 2^3, pierwiastki sqrt(9)).
-WAŻNE: Odpowiedz TYLKO JSONem.`
+        Wygeneruj jedno zadanie egzaminacyjne z tematu: ${topic_name}
+        
+        Zadanie powinno zawierać:
+        1. Treść głównego pytania/polecenia
+        2. ${examples_count} konkretnych przykładów do rozwiązania z odpowiedziami
+        
+        WAŻNE dla formatowania matematycznego:
+        - Ułamki zapisuj w LaTeX: \\frac{1}{2}
+        - Potęgi zapisuj w LaTeX: 2^{3}
+        - Pierwiastki zapisuj w LaTeX: \\sqrt{9}
+        - Stopnie zapisuj: 90^{\\circ}
+        - Jeśli zadanie wymaga rysunku, opisz go słownie lub użyj współrzędnych
+        
+        Format JSON:
+        {
+          "question": "treść głównego pytania (może zawierać LaTeX w $$...$$)",
+          "examples": [
+            {"problem": "konkretny przykład 1 (może zawierać LaTeX)", "answer": "odpowiedź"}
+          ]
+        }
+        
+        Odpowiedzi w prostej formie lub LaTeX.
+        WAŻNE: Odpowiedz TYLKO JSONem.`
       }]
     })
   })

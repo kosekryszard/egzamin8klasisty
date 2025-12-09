@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { supabase } from './supabaseClient'
+import MathDisplay from './MathDisplay.jsx'
 
 function StudentView({ onLogout }) {
   const [config, setConfig] = useState(null)
@@ -67,15 +68,15 @@ function StudentView({ onLogout }) {
     setLoading(true)
     
     try {
-      const { data: topic } = await supabase.from('topics').select('name').eq('id', topicId).single()
-      
-      const response = await fetch('/.netlify/functions/generate-question', {
-        method: 'POST',
-        body: JSON.stringify({
-          topic_name: topic.name,
-          examples_count: config.examples_per_task
+        const { data: topic } = await supabase.from('topics').select('*').eq('id', topicId).single()
+
+        const response = await fetch('/.netlify/functions/generate-question', {
+          method: 'POST',
+          body: JSON.stringify({
+            topic_name: topic.name,
+            examples_count: topic.examples_per_task || 5
+          })
         })
-      })
   
       const data = await response.json()
       
@@ -172,9 +173,9 @@ function StudentView({ onLogout }) {
       ) : (
         <>
           <div style={{ marginBottom: '20px', padding: '15px', background: '#f5f5f5' }}>
-            <h3>{question}</h3>
-            <p><strong>Przykład:</strong> {examples[currentExample]?.problem}</p>
-          </div>
+  <h3><MathDisplay text={question} /></h3>
+  <p><strong>Przykład:</strong> <MathDisplay text={examples[currentExample]?.problem} /></p>
+</div>
 
           <input 
             type="text"

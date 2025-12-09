@@ -30,7 +30,11 @@ function AdminPanel({ onLogout }) {
     await supabase.from('topics').update({ active: !currentActive }).eq('id', topicId)
     loadTopics()
   }
-
+  const updateTopicExamples = async (topicId, count) => {
+    await supabase.from('topics').update({ examples_per_task: count }).eq('id', topicId)
+    loadTopics()
+  }
+  
   return (
     <div style={{ padding: '20px', maxWidth: '600px', margin: '0 auto' }}>
       <button onClick={onLogout} style={{ marginBottom: '20px' }}>Wyloguj</button>
@@ -65,17 +69,26 @@ function AdminPanel({ onLogout }) {
       <div style={{ padding: '15px', border: '1px solid #ddd' }}>
         <h3>Tematy (włącz/wyłącz)</h3>
         {topics.map(topic => (
-          <div key={topic.id} style={{ marginBottom: '10px' }}>
-            <label>
-              <input 
-                type="checkbox" 
-                checked={topic.active}
-                onChange={() => toggleTopic(topic.id, topic.active)}
-              />
-              <span style={{ marginLeft: '10px' }}>{topic.name}</span>
-            </label>
-          </div>
-        ))}
+  <div key={topic.id} style={{ marginBottom: '15px', padding: '10px', border: '1px solid #eee' }}>
+    <label style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+      <input 
+        type="checkbox" 
+        checked={topic.active}
+        onChange={() => toggleTopic(topic.id, topic.active)}
+      />
+      <span style={{ flex: 1 }}>{topic.name}</span>
+      <input 
+        type="number"
+        min="1"
+        max="10"
+        value={topic.examples_per_task || 5}
+        onChange={(e) => updateTopicExamples(topic.id, parseInt(e.target.value))}
+        style={{ width: '60px', padding: '5px' }}
+      />
+      <span>przykładów</span>
+    </label>
+  </div>
+))}
       </div>
     </div>
   )

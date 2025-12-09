@@ -6,9 +6,11 @@
     "build": "vite build"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.39.0",
+    "katex": "^0.16.27",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "@supabase/supabase-js": "^2.39.0"
+    "react-katex": "^3.1.0"
   },
   "devDependencies": {
     "@vitejs/plugin-react": "^4.2.1",
