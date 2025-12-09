@@ -4,7 +4,3 @@ const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://dtrkylskmxeevm
 const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR0cmt5bHNrbXhlZXZtdHJnemJ5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUyOTU2ODUsImV4cCI6MjA4MDg3MTY4NX0.FmASfZSc_0dGmyZlBFE0nX1VQULZtrtW-Zt_AJ-v0_E'
 
 export const supabase = createClient(supabaseUrl, supabaseKey)
-
-node_modules
-dist
-.env.local
