@@ -69,66 +69,23 @@ function StudentView({ onLogout }) {
     try {
       const { data: topic } = await supabase.from('topics').select('name').eq('id', topicId).single()
       
-      const ANTHROPIC_API_KEY = import.meta.env.VITE_ANTHROPIC_API_KEY
-      
-      const response = await fetch('https://api.anthropic.com/v1/messages', {
+      const response = await fetch('/.netlify/functions/generate-question', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-api-key': ANTHROPIC_API_KEY,
-          'anthropic-version': '2023-06-01'
-        },
         body: JSON.stringify({
-          model: 'claude-sonnet-4-20250514',
-          max_tokens: 2000,
-          messages: [{
-            role: 'user',
-            content: `Jesteś ekspertem od matematyki dla 8 klasy szkoły podstawowej w Polsce. 
-  
-  Wygeneruj jedno zadanie egzaminacyjne z tematu: ${topic.name}
-  
-  Zadanie powinno zawierać:
-  1. Treść głównego pytania/polecenia
-  2. ${config.examples_per_task} konkretnych przykładów do rozwiązania z odpowiedziami
-  
-  Format JSON:
-  {
-    "question": "treść głównego pytania",
-    "examples": [
-      {"problem": "konkretny przykład 1", "answer": "odpowiedź"},
-      {"problem": "konkretny przykład 2", "answer": "odpowiedź"}
-    ]
-  }
-  
-  Odpowiedzi powinny być w formie prostej (liczby, ułamki jak 1/2, potęgi jak 2^3, pierwiastki jak sqrt(9)).
-  Zadania na poziomie egzaminu ósmoklasisty - średnia trudność.
-  
-  WAŻNE: Odpowiedz TYLKO samym JSONem, bez żadnego dodatkowego tekstu.`
-          }]
+          topic_name: topic.name,
+          examples_count: config.examples_per_task
         })
       })
   
       const data = await response.json()
-      let content = data.content[0].text
       
-      // Wyciągnij JSON z odpowiedzi
-      try {
-        const parsed = JSON.parse(content)
-        setQuestion(parsed.question)
-        setExamples(parsed.examples)
-      } catch (e) {
-        // Jeśli Claude dodał markdown ```json
-        const match = content.match(/\{[\s\S]*\}/)
-        const parsed = JSON.parse(match[0])
-        setQuestion(parsed.question)
-        setExamples(parsed.examples)
-      }
-  
+      setQuestion(data.question)
+      setExamples(data.examples)
       setCurrentExample(0)
       setUserAnswer('')
     } catch (error) {
       console.error('Błąd generowania:', error)
-      alert('Błąd generowania pytania. Sprawdź konsolę.')
+      alert('Błąd generowania pytania')
     } finally {
       setLoading(false)
     }
