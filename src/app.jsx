@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
-import AdminPanel from './AdminPanel'
-import StudentView from './StudentView'
+import AdminPanel from './AdminPanel.jsx'  // Dodaj .jsx
+import StudentView from './StudentView.jsx'  // Dodaj .jsx
 
 function App() {
   const [view, setView] = useState('login')
