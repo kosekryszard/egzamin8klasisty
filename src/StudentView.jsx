@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { supabase } from './supabaseClient'
 import MathDisplay from './MathDisplay.jsx'
+import MathKeyboard from './MathKeyboard.jsx'
 
 function StudentView({ onLogout }) {
   const [config, setConfig] = useState(null)
