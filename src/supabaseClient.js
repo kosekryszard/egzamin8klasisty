@@ -1,13 +1,10 @@
 import { createClient } from '@supabase/supabase-js'
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
-const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://dtrkylskmxeevmtrgzby.supabase.co'
+const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR0cmt5bHNrbXhlZXZtdHJnemJ5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUyOTU2ODUsImV4cCI6MjA4MDg3MTY4NX0.FmASfZSc_0dGmyZlBFE0nX1VQULZtrtW-Zt_AJ-v0_E'
 
 export const supabase = createClient(supabaseUrl, supabaseKey)
-```
 
-Stwórz plik `.gitignore` (żeby nie wrzucić kluczy na GitHub):
-```
 node_modules
 dist
 .env.local
