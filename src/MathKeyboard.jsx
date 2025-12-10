@@ -1,7 +1,6 @@
 import React from 'react'
 
 function MathKeyboard({ onInput, onDelete, onClear }) {
-
   const buttons = [
     ['7', '8', '9', '/', '←'],
     ['4', '5', '6', '^', 'C'],
@@ -9,7 +8,7 @@ function MathKeyboard({ onInput, onDelete, onClear }) {
     ['0', '.', '-', '(', ')'],
     ['+', '=', 'x', ' ', '✓']
   ]
-  
+
   const handleClick = (value) => {
     if (value === '←') {
       onDelete()
@@ -22,23 +21,6 @@ function MathKeyboard({ onInput, onDelete, onClear }) {
     } else if (value === '°') {
       onInput('°')
     } else if (value === '✓') {
-      return
-    } else {
-      onInput(value)
-    }
-  }
-
-  const handleClick = (value) => {
-    if (value === '←') {
-      onDelete()
-    } else if (value === 'C') {
-      onClear()
-    } else if (value === '√') {
-      onInput('sqrt(')
-    } else if (value === '°') {
-      onInput('°')
-    } else if (value === '✓') {
-      // Enter/sprawdź - obsłużymy w rodzicu
       return
     } else {
       onInput(value)
