@@ -1,11 +1,14 @@
 import React from 'react'
 
 function MathKeyboard({ onInput, onDelete, onClear }) {
-  const buttons = [
-    ['7', '8', '9', '/', '←'],
-    ['4', '5', '6', '^', 'C'],
-    ['1', '2', '3', '√', '°'],
-    ['0', '.', '-', ' ', '✓']
+
+    const buttons = [
+        ['7', '8', '9', '/', '←'],
+        ['4', '5', '6', '^', 'C'],
+        ['1', '2', '3', '√', '°'],
+        ['0', '.', '-', 'x', '='],
+        ['+', '(', ')', ' ', '✓']
+      
   ]
 
   const handleClick = (value) => {
