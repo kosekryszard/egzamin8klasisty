@@ -5,44 +5,44 @@ import MathKeyboard from './MathKeyboard.jsx'
 
 function StudentView({ onLogout }) {
   const [config, setConfig] = useState(null)
-  const [availableTopics, setAvailableTopics] = useState([])
-  const [selectedTopic, setSelectedTopic] = useState(null)
+  const [allTopics, setAllTopics] = useState([])
+  const [selectedTopics, setSelectedTopics] = useState([])
   const [session, setSession] = useState(null)
-  const [currentTask, setCurrentTask] = useState(0) // 0 = wybór tematu, 1-N = zadania
+  const [currentTopicIndex, setCurrentTopicIndex] = useState(0)
+  const [currentTask, setCurrentTask] = useState(0)
   const [question, setQuestion] = useState(null)
   const [examples, setExamples] = useState([])
   const [currentExample, setCurrentExample] = useState(0)
   const [userAnswer, setUserAnswer] = useState('')
   const [loading, setLoading] = useState(false)
+  const [phase, setPhase] = useState('select') // 'select', 'solving'
 
   useEffect(() => {
     loadInitialData()
   }, [])
 
   const loadInitialData = async () => {
-    // Załaduj config
     const { data: cfg } = await supabase.from('config').select('*').single()
     setConfig(cfg)
 
-    // Załaduj dostępne tematy (aktywne i nieużyte w tym cyklu)
-    const { data: usedTopics } = await supabase.from('cycle_state').select('topic_id').eq('used', true)
-    const usedIds = usedTopics.map(t => t.topic_id)
-    
-    const { data: allTopics } = await supabase.from('topics').select('*').eq('active', true)
-    const available = allTopics.filter(t => !usedIds.includes(t.id))
-    
-    setAvailableTopics(available)
+    const { data: topics } = await supabase.from('topics').select('*').eq('active', true).order('id')
+    setAllTopics(topics || [])
+  }
 
-    // Jeśli wszystkie użyte - resetuj cykl
-    if (available.length === 0) {
-      await supabase.from('cycle_state').update({ used: false }).neq('id', 0)
-      const { data: resetTopics } = await supabase.from('topics').select('*').eq('active', true)
-      setAvailableTopics(resetTopics)
+  const toggleTopicSelection = (topicId) => {
+    if (selectedTopics.includes(topicId)) {
+      setSelectedTopics(selectedTopics.filter(id => id !== topicId))
+    } else if (selectedTopics.length < 4) {
+      setSelectedTopics([...selectedTopics, topicId])
     }
   }
 
-  const startSession = async (topicId) => {
-    // Utwórz sesję
+  const startSession = async () => {
+    if (selectedTopics.length !== 4) {
+      alert('Wybierz dokładnie 4 działy!')
+      return
+    }
+
     const { data: newSession } = await supabase
       .from('sessions')
       .insert({})
@@ -50,35 +50,35 @@ function StudentView({ onLogout }) {
       .single()
 
     setSession(newSession)
-    setSelectedTopic(topicId)
     
-    // Oznacz temat jako użyty w cyklu
-    await supabase.from('cycle_state').update({ used: true }).eq('topic_id', topicId)
+    for (const topicId of selectedTopics) {
+      await supabase.from('session_topics').insert({
+        session_id: newSession.id,
+        topic_id: topicId
+      })
+      await supabase.from('cycle_state').update({ used: true }).eq('topic_id', topicId)
+    }
 
-    // Dodaj temat do sesji
-    await supabase.from('session_topics').insert({
-      session_id: newSession.id,
-      topic_id: topicId
-    })
-
+    setPhase('solving')
+    setCurrentTopicIndex(0)
     setCurrentTask(1)
-    await generateQuestion(topicId)
+    await generateQuestion(selectedTopics[0])
   }
 
   const generateQuestion = async (topicId) => {
     setLoading(true)
     
     try {
-        const { data: topic } = await supabase.from('topics').select('*').eq('id', topicId).single()
-
-        const response = await fetch('/.netlify/functions/generate-question', {
-          method: 'POST',
-          body: JSON.stringify({
-            topic_name: topic.name,
-            examples_count: topic.examples_per_task || 5
-          })
+      const { data: topic } = await supabase.from('topics').select('*').eq('id', topicId).single()
+      
+      const response = await fetch('/.netlify/functions/generate-question', {
+        method: 'POST',
+        body: JSON.stringify({
+          topic_name: topic.name,
+          examples_count: topic.examples_per_task || 5
         })
-  
+      })
+
       const data = await response.json()
       
       setQuestion(data.question)
@@ -96,24 +96,26 @@ function StudentView({ onLogout }) {
   const checkAnswer = () => {
     const correct = examples[currentExample]
     
-    if (userAnswer.trim() === correct.answer) {
-      // Poprawna odpowiedź
+    const userAnswerNorm = userAnswer.trim().toLowerCase().replace(/\s+/g, '')
+    const correctAnswerNorm = correct.answer.trim().toLowerCase().replace(/\s+/g, '')
+    
+    if (userAnswerNorm === correctAnswerNorm) {
       if (currentExample < examples.length - 1) {
-        // Następny przykład
         setCurrentExample(currentExample + 1)
         setUserAnswer('')
       } else {
-        // Koniec przykładów - następne zadanie
-        if (currentTask < config.required_correct_tasks) {
+        // Koniec przykładów dla tego zadania
+        if (currentTopicIndex < selectedTopics.length - 1) {
+          // Następny dział
+          setCurrentTopicIndex(currentTopicIndex + 1)
           setCurrentTask(currentTask + 1)
-          generateQuestion(selectedTopic)
+          generateQuestion(selectedTopics[currentTopicIndex + 1])
         } else {
-          // Sukces!
+          // Koniec sesji
           finishSession(true)
         }
       }
     } else {
-      // Błąd - restart
       alert('Błędna odpowiedź! Zaczynasz od początku.')
       finishSession(false)
     }
@@ -131,42 +133,70 @@ function StudentView({ onLogout }) {
     
     // Reset
     setSession(null)
+    setPhase('select')
+    setSelectedTopics([])
+    setCurrentTopicIndex(0)
     setCurrentTask(0)
-    setSelectedTopic(null)
     loadInitialData()
   }
 
   if (!config) return <div>Ładowanie...</div>
 
-  if (currentTask === 0) {
-    // Wybór tematu
+  if (phase === 'select') {
     return (
       <div style={{ padding: '20px', maxWidth: '600px', margin: '0 auto' }}>
-        <button onClick={onLogout}>Wyloguj</button>
-        <h2>Wybierz temat</h2>
-        {availableTopics.length === 0 && <p>Wszystkie tematy zostały użyte. Odśwież stronę.</p>}
-        <div style={{ display: 'grid', gap: '10px' }}>
-          {availableTopics.map(topic => (
+        <button onClick={onLogout} style={{ marginBottom: '20px' }}>Wyloguj</button>
+        <h2>Wybierz 4 działy do ćwiczenia</h2>
+        <p>Wybrano: {selectedTopics.length}/4</p>
+        
+        <div style={{ display: 'grid', gap: '10px', marginBottom: '20px' }}>
+          {allTopics.map(topic => (
             <button 
               key={topic.id}
-              onClick={() => startSession(topic.id)}
-              style={{ padding: '15px', fontSize: '16px' }}
+              onClick={() => toggleTopicSelection(topic.id)}
+              style={{ 
+                padding: '15px', 
+                fontSize: '16px',
+                background: selectedTopics.includes(topic.id) ? '#4CAF50' : 'white',
+                color: selectedTopics.includes(topic.id) ? 'white' : 'black',
+                border: '2px solid #ddd',
+                borderRadius: '8px',
+                cursor: 'pointer',
+                textAlign: 'left'
+              }}
             >
               {topic.name}
             </button>
           ))}
         </div>
+
+        <button 
+          onClick={startSession}
+          disabled={selectedTopics.length !== 4}
+          style={{ 
+            width: '100%', 
+            padding: '15px', 
+            fontSize: '18px',
+            background: selectedTopics.length === 4 ? '#4CAF50' : '#ccc',
+            color: 'white',
+            border: 'none',
+            borderRadius: '8px',
+            cursor: selectedTopics.length === 4 ? 'pointer' : 'not-allowed',
+            fontWeight: 'bold'
+          }}
+        >
+          Rozpocznij sesję
+        </button>
       </div>
     )
   }
 
-  // Rozwiązywanie zadań
   return (
     <div style={{ padding: '20px', maxWidth: '600px', margin: '0 auto' }}>
       <div style={{ marginBottom: '20px' }}>
-        <strong>Zadanie {currentTask} / {config.required_correct_tasks}</strong>
+        <strong>Zadanie {currentTask} / 4</strong>
         <br/>
-        <strong>Przykład {currentExample + 1} / {config.examples_per_task}</strong>
+        <strong>Przykład {currentExample + 1} / {examples.length}</strong>
       </div>
 
       {loading ? (
@@ -177,12 +207,9 @@ function StudentView({ onLogout }) {
             marginBottom: '20px', 
             padding: '15px', 
             background: '#f5f5f5',
-            wordWrap: 'break-word',
-            whiteSpace: 'normal',
-            lineHeight: '1.6',
             borderRadius: '8px'
           }}>
-            <h3 style={{ marginBottom: '15px', wordWrap: 'break-word' }}>
+            <h3 style={{ marginBottom: '15px' }}>
               <MathDisplay text={question} />
             </h3>
             <p style={{ fontSize: '16px' }}>
@@ -193,7 +220,7 @@ function StudentView({ onLogout }) {
           <input 
             type="text"
             value={userAnswer}
-            onChange={(e) => setUserAnswer(e.target.value)}
+            readOnly
             placeholder="Twoja odpowiedź"
             style={{ 
               width: '100%', 
@@ -204,7 +231,6 @@ function StudentView({ onLogout }) {
               border: '2px solid #ddd',
               borderRadius: '8px'
             }}
-            readOnly
           />
 
           <MathKeyboard
