@@ -96,27 +96,41 @@ function StudentView({ onLogout }) {
   const checkAnswer = () => {
     const correct = examples[currentExample]
     
-    const userAnswerNorm = userAnswer.trim().toLowerCase().replace(/\s+/g, '')
-    const correctAnswerNorm = correct.answer.trim().toLowerCase().replace(/\s+/g, '')
+    // Normalizuj obie odpowiedzi
+    const normalizeAnswer = (answer) => {
+      return answer
+        .trim()
+        .toLowerCase()
+        .replace(/\s+/g, '')  // usuń spacje
+        .replace(/[,:]/g, '.')  // zamień : i , na .
+        .replace(/^0+/, '')  // usuń leading zeros
+    }
     
-    if (userAnswerNorm === correctAnswerNorm) {
+    const userAnswerNorm = normalizeAnswer(userAnswer)
+    const correctAnswerNorm = normalizeAnswer(correct.answer)
+    
+    // Sprawdź różne warianty
+    const isCorrect = 
+      userAnswerNorm === correctAnswerNorm ||
+      userAnswer.trim() === correct.answer.trim() ||
+      // Dla godzin: 9:12 = 9.12 = 912
+      userAnswerNorm.replace(/[.:]/g, '') === correctAnswerNorm.replace(/[.:]/g, '')
+    
+    if (isCorrect) {
       if (currentExample < examples.length - 1) {
         setCurrentExample(currentExample + 1)
         setUserAnswer('')
       } else {
-        // Koniec przykładów dla tego zadania
         if (currentTopicIndex < selectedTopics.length - 1) {
-          // Następny dział
           setCurrentTopicIndex(currentTopicIndex + 1)
           setCurrentTask(currentTask + 1)
           generateQuestion(selectedTopics[currentTopicIndex + 1])
         } else {
-          // Koniec sesji
           finishSession(true)
         }
       }
     } else {
-      alert('Błędna odpowiedź! Zaczynasz od początku.')
+      alert(`Błędna odpowiedź! Prawidłowa: ${correct.answer}\nZaczynasz od początku.`)
       finishSession(false)
     }
   }

@@ -13,52 +13,66 @@ exports.handler = async (event) => {
       max_tokens: 2000,
       messages: [{
         role: 'user',
-        content: `Jesteś ekspertem od egzaminu ósmoklasisty z matematyki w Polsce. Twoje zadania MUSZĄ być na poziomie rzeczywistego egzaminu.
+        content: `Jesteś ekspertem od egzaminu ósmoklasisty z matematyki w Polsce.
 
 TEMAT: ${topic_name}
 
-WYMAGANIA:
-1. Zadania muszą być REALISTYCZNE - takie jak na prawdziwym egzaminie
-2. Nie twórz infantylnych zadań typu "oblicz 15" czy "podaj wynik 2+3"
-3. Zadania powinny wymagać MYŚLENIA i wieloetapowych obliczeń
-4. Używaj kontekstu rzeczywistych sytuacji (zakupy, budowa, podróże, geometria praktyczna)
-5. Dla geometrii - opisuj figury z konkretnymi wymiarami
-6. Dla równań - niech będą wieloetapowe z niewiadomą po obu stronach
-7. Dla procentów - zadania z życia (VAT, rabaty, odsetki)
-8. Dla prawdopodobieństwa - realne scenariusze z wieloma możliwościami
+ZASADY TWORZENIA ZADAŃ:
+1. Zadania na poziomie rzeczywistego egzaminu ósmoklasisty
+2. Wymagają myślenia i wieloetapowych obliczeń
+3. Kontekst życiowy (zakupy, podróże, geometria praktyczna)
+4. NIE twórz infantylnych zadań typu "oblicz 2+3"
 
-PRZYKŁADY DOBRYCH ZADAŃ:
+FORMATY ODPOWIEDZI:
+- Liczby całkowite: 15, 42
+- Ułamki: zapisz w LaTeX jako \\\\frac{3}{4} (odpowiedź: \\\\frac{3}{4})
+- Ułamki dziesiętne: 2.5, 3.75
+- Godziny: w formacie 9:12 lub 14:30
+- Jednostki: dołącz jednostkę jeśli potrzebna, np. "23m2" lub "15cm"
+- Procent: jako liczba bez symbolu %, np. "15" dla 15%
 
-Równania:
-- "Rozwiąż równanie: 3(x-4) + 5 = 2x + 7"
-- "W pudełku jest x cukierków. Ania zjadła 1/3, potem Bartek 5 sztuk. Zostało 13. Ile było na początku?"
+PRZYKŁADY ZADAŃ RÓŻNYCH TYPÓW:
+
+NWW/NWD:
+"Autobus A odjeżdża co 12 minut, autobus B co 18 minut. Oba odjechały o 8:00. Kiedy ponownie odjadą jednocześnie?"
+Odpowiedź: "8:36" (lub "8.36")
 
 Geometria:
-- "Prostokątna działka ma wymiary 24m × 18m. Oblicz długość przekątnej."
-- "W graniastosłupie prawidłowym czworokątnym krawędź podstawy wynosi 6cm, wysokość 10cm. Oblicz pole powierzchni całkowitej."
+"Prostokątna działka ma wymiary 24m × 18m. Oblicz długość przekątnej (zaokrąglij do całości)."
+Odpowiedź: "30"
+
+Równania:
+"Rozwiąż równanie: 3(x-4) = 2x + 5"
+Odpowiedź: "17"
 
 Procenty:
-- "Telewizor kosztował 2400zł. Po obniżce o 15% i podwyżce o 10% wynosi teraz X. Oblicz X."
+"Cena 2400zł obniżona o 15%. Ile wynosi nowa cena?"
+Odpowiedź: "2040"
 
-FORMATOWANIE:
+FORMATOWANIE MATEMATYCZNE:
 - Ułamki: \\\\frac{3}{4}
 - Potęgi: 2^{3}
 - Pierwiastki: \\\\sqrt{16}
 - Stopnie: 45^{\\\\circ}
 
-Wygeneruj ${examples_count} przykładów podobnego poziomu trudności.
+Wygeneruj ${examples_count} przykładów podobnego poziomu.
 
 Format JSON:
 {
-  "question": "Precyzyjne polecenie co uczeń ma obliczyć",
+  "question": "Jasne polecenie co obliczyć",
   "examples": [
-    {"problem": "Szczegółowy opis zadania z danymi", "answer": "wynik_liczbowy_lub_uproszczone_wyrażenie"}
+    {
+      "problem": "Szczegółowy opis z danymi", 
+      "answer": "wynik_w_odpowiednim_formacie"
+    }
   ]
 }
 
-ODPOWIEDZI to TYLKO FINALNE WYNIKI (liczby, ułamki w LaTeX, uproszczone wyrażenia).
+KRYTYCZNE: Odpowiedzi muszą być w PROSTYM formacie który uczeń może wpisać na klawiaturze.
+Dla godzin używaj formatu HH:MM (np. 9:12, 14:30).
+Dla ułamków używaj LaTeX tylko jeśli nie da się podać jako dziesiętny.
 
-Odpowiedz TYLKO JSONem, bez żadnego tekstu poza JSONem.`
+Odpowiedz TYLKO JSONem.`
       }]
     })
   })

@@ -6,7 +6,7 @@ function MathKeyboard({ onInput, onDelete, onClear }) {
     ['4', '5', '6', '^', 'C'],
     ['1', '2', '3', '√', '∛'],
     ['0', '.', '-', '(', ')'],
-    ['+', '=', 'x', ' ', '✓']
+    ['+', '=', 'x', ':', '✓']
   ]
 
   const handleClick = (value) => {
